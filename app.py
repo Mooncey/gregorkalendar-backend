@@ -75,8 +75,7 @@ def get_user_teams():
     #         }
     #     ]
     # }
-    req = request.json
-    user_email = req['userEmail']
+    user_email = request.args.get("userEmail")
     user_teams = []
 
     user = db.session.query(User).filter_by(email=user_email).first()
@@ -237,8 +236,9 @@ def get_team():
             ]
         }
     }
-    team_id = request['teamId']
-    user_email = request['userEmail']
+    req = request.json
+    team_id = req['teamId']
+    user_email = req['userEmail']
 
     team = db.session.query(Team).filter_by(id=team_id).first()
     if not team:
@@ -329,7 +329,8 @@ def add_member():
     req = request.json
 
     team_id = req['teamId']
-    member_email = req['member']['email']
+    member = req['member']
+    member_email = member['email']
 
     user = db.session.query(User).filter_by(email=member_email).first()
 
@@ -340,7 +341,9 @@ def add_member():
     for t in user.member_teams:
         if t.id == team_id:
             return jsonify(error_response), 400
-    
+        
+    db.session.add(MemberTeamInfos(team_id=team_id, user_email=member_email, max_blocks=3))
+
     team = db.session.query(Team).filter_by(id=team_id).first()
     team.members.append(user)
 
