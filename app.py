@@ -460,7 +460,8 @@ def generate_schedule():
     """
     Creates the schedule for a given team
     """
-    id = request.args.get("id")
+    req = request.json
+    id = req["teamId"]
     team = db.session.query(Team).filter_by(id=id).first()
 
     member_infos = [db.session.query(MemberTeamInfos).filter_by(team_id=id, user_email=member.email).first() for member in team.members]
@@ -468,10 +469,19 @@ def generate_schedule():
     user_avails = []
     slots = []
     for mem_info in member_infos:
-        avail = UserAvail(mem_info.user_email, json.loads(mem_info.available_blocks), json.loads(mem_info.prefer_not_blocks), mem_info.max_blocks)
+        if mem_info.available_blocks:
+            avail_blocks = mem_info.available_blocks
+        else:
+            avail_blocks = []
+
+        if mem_info.prefer_not_blocks:
+            prefer_not_blocks = mem_info.prefer_not_blocks
+        else:
+            prefer_not_blocks = []
+        avail = UserAvail(mem_info.user_email, avail_blocks, prefer_not_blocks, mem_info.max_blocks)
         user_avails += [avail]
 
-    dejsoned_slots = json.loads(team.slots)
+    dejsoned_slots = team.slots
     for slot in dejsoned_slots:
         slot_obj = Slot(slot.name, slot.slotId, slot.numMembers, slot.startBlock, slot.endBlock)
         slots += [slot_obj]
@@ -483,8 +493,30 @@ def generate_schedule():
     result = nx.max_flow_min_cost(graph, "source", "sink")
     final_schedule = mapping_to_results(result, user_avails)
 
-    # TODO: transfer schedule
+    team.schedule = final_schedule
     return jsonify(final_schedule), 200
+
+
+@app.route('/api/team/slot', methods=['POST'])
+def add_slot():
+    req = request.json
+    team_id = req["teamId"]
+    name = req["name"]
+    num_members = req["numMembers"]
+    start_block = req["startBlock"]
+    end_block = req["endBlock"]
+    current_slots = db.session.query(Team).filter_by(id=team_id).first().slots
+    if current_slots:
+        last_elt = current_slots[-1]
+        current_slots.append({"name": name, "numMembers": num_members, "startBlock": start_block, "endBlock": end_block, "slotId": last_elt["slotId"] + 1})
+    else:
+        current_slots = [{"name": name, "numMembers": num_members, "startBlock": start_block, "endBlock": end_block, "slotId": 1}]
+
+    db.session.query(Team).filter_by(id=team_id).update({"slots": current_slots})
+
+    db.session.commit()
+
+    return jsonify({"teamId": team_id, "slots": {"slots": current_slots}}), 200
 
 
 @event.listens_for(User, 'after_insert')

@@ -1,6 +1,8 @@
 from typing import List
 import networkx as nx
 import json as json
+from models.User import User
+from models.database import db
 
 class UserAvail:
     def __init__(self, email: str, available_blocks: List[int], prefer_not_blocks: List[int], max_blocks: int):
@@ -152,15 +154,22 @@ def generate_graph(memberAvails: List[MemberAvail], slots: List[Slot]) -> nx.Gra
     return G
 
 
-def mapping_to_results(mapping: dict, members: List[MemberSlot]):
+def mapping_to_results(mapping: dict, members: List[MemberSlot], slots: List[Slot]):
     final_result = []
+    slot_assigns = {}
     for mem in members:
         if mem.email in mapping:
             slot_info = mapping[mem.email]
             # print(f"For {mem.email} the slot_info is {slot_info}")
             for slot_id in slot_info:
                 if slot_info[slot_id] == 1:
-                    final_result.append({"email": mem.email, "slot_id": slot_id})
+                    if slot_id in slot_assigns:
+                        current_data = slot_assigns[slot_id]
+                    else:
+                        current_data = []
+                    name = db.session.query(User).filter_by(email=mem.email).first().name
+                    slot_assigns[slot_id] = current_data + [{"name": name, "email": mem.email}]
+                    # final_result.append({"email": mem.email, "slot_id": slot_id})
                     # print(f"found mapping for email {mem.email} slot_id {slot_id}")
             # for slot in mapping[mem.email]:
             #     final_result.append({
@@ -168,6 +177,12 @@ def mapping_to_results(mapping: dict, members: List[MemberSlot]):
             #         "slot_id": slot
             #     })
     # print(final_result)
+    for key, val in slot_assigns:
+        slot = next((x for x in slots if x.slotId == key), None)
+        final_result += [{
+            "slot": slot.__dict__(),
+            "members": val
+        }]
     return final_result
     # print(mapping)
 
