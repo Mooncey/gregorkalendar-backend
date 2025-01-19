@@ -226,9 +226,8 @@ def get_team():
     #         ]
     #     }
     # }
-    req = request.json
-    team_id = req['teamId']
-    user_email = req['userEmail']
+    team_id = request.args.get('teamId')
+    user_email = request.args.get('userEmail')
 
     team = db.session.query(Team).filter_by(id=team_id).first()
     if not team:
