@@ -2,6 +2,13 @@ from datetime import datetime
 from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS, cross_origin
+from sqlalchemy import event
+from sqlalchemy.orm import sessionmaker
+from models.MemberTeamInfos import MemberTeamInfos
+from models.Team import Team
+from models.User import User
+from models.database import db
+from models.TeamUser import team_leaders, team_members
 
 app = Flask(__name__)
 app.config['CORS_HEADERS'] = 'Content-Type'
@@ -13,22 +20,10 @@ def hello_world():
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'  # Use SQLite for simplicity
-db = SQLAlchemy(app)
+# db = SQLAlchemy(app)
 
-# Define a simple User model
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+db.init_app(app)
 
-    def to_dict(self):
-        return {
-            'id': self.id,
-            'username': self.username,
-            'email': self.email,
-            'created_at': self.created_at.isoformat()
-        }
 
 @app.route('/api/hello', methods=['GET'])
 def hello_world():
@@ -37,7 +32,13 @@ def hello_world():
 @app.route('/api/users', methods=['POST'])
 def create_user():
     data = request.json
-    new_user = User(username=data['username'], email=data['email'])
+    leading_teams_input = []
+    member_teams_input = []
+    if 'leading_teams' in data:
+        leading_teams_input = data['leading_teams']
+    if 'member_teams' in data:
+        member_teams_input = data['member_teams']
+    new_user = User(email=data['email'], name=data['name'], leading_teams=leading_teams_input, member_teams=member_teams_input)
     db.session.add(new_user)
     db.session.commit()
     return jsonify(new_user.to_dict()), 201
@@ -47,6 +48,11 @@ def create_user():
 def get_users():
     result = db.session.query(User).all()
     return jsonify([user.to_dict() for user in result]), 200
+
+@app.route('/api/user/team')
+def get_user_teams():
+    stub_data = {}
+    return jsonify(stub_data), 200
 
 @cross_origin()
 @app.route('/api/team', methods=['GET'])
@@ -183,15 +189,57 @@ def get_team():
             ]
         }
     }
+    team_id = request['teamId']
+    user_email = request['userEmail']
 
-    return jsonify(stub_data)
+    team = db.session.query(Team).filter_by(id=team_id).first()
+    if not team:
+        return jsonify({"error": "Team not found"}), 404
+
+    team_info = {
+        "teamId": team.id,
+        # "teamName": team.name,
+        # "leaders": [leader.to_dict() for leader in team.leaders],
+        # "members": [member.to_dict() for member in team.members],
+        "teamInfo": {
+            "name": team.name,
+            "leaders": [{"name": leader.name, "email": leader.email} for leader in team.leaders],
+            "members": [{"name": member.name, "email": member.email} for member in team.members]
+        }
+    }
+    if team.schedule:
+        team_info["schedule"] = team.schedule
+    else:
+        team_info["schedule"] = None
+
+    if team.availability:
+        team_info["availability"] = team.availability
+    else:
+        team_info["availability"] = None
+
+    if team.slots:
+        team_info["slots"] = team.slots
+    else:
+        team_info["slots"] = None
+
+
+    return jsonify(team_info)
 
 @app.route('/api/team', methods=['POST'])
-def create_team():
+def create_single_team():
     # TODO
-    return jsonify({
-    "teamId": 110
-    })
+    user_email = data['userEmail']
+    team_name = data['teamName']
+    leaders_input = [db.session.query(User).filter_by(email=user_email).first()]
+    members_input = []
+    new_team = Team(name=team_name, leaders=leaders_input, members=members_input)
+    db.session.add(new_team)
+    db.session.commit()
+    return jsonify({"teamId": new_team.id}), 200
+
+    # return jsonify({
+    # "teamId": 110
+    # })
 
 @app.route('/api/member/team', methods=['GET'])
 def get_member_teams():
@@ -216,7 +264,90 @@ def get_member_teams():
             }
         ]
     }
-    return jsonify(stub_data)
+
+    user_email = request['userEmail']
+    user_teams = []
+
+    user = db.session.query(User).filter_by(id=user_email).first()
+
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+    
+    for t in user.member_teams:
+        user_teams.append({
+            "teamName": t.name,
+            "teamId": t.id
+        })
+    
+    teams = {
+        "teams": user_teams
+    }
+
+    return jsonify(teams)
+
+@app.route('/api/teams', methods=['POST'])
+def create_team():
+    data = request.json
+
+    user_email = data['userEmail']
+    team_name = data['teamName']
+    leaders_input = [db.session.query(User).filter_by(email=user_email).first()]
+    members_input = []
+    # if 'leaders' in data:
+    #     leader_emails = data['leaders']
+    #     for email in leader_emails:
+    #         print(email)
+    #         leaders_input += [db.session.query(User).filter_by(email=email).first()]
+    # if 'members' in data:
+    #     members_emails = data['members']
+    #     for email in members_emails:
+    #         print(email)
+    #         members_input += [db.session.query(User).filter_by(email=email).first()]
+    new_team = Team(name=team_name, leaders=leaders_input, members=members_input)
+    print(new_team)
+    db.session.add(new_team)
+    db.session.commit()
+    return jsonify({"teamId": new_team.id}), 200
+
+@app.route('/api/teams', methods=['GET'])
+def get_teams():
+    result = db.session.query(Team).all()
+    return jsonify([team.to_dict() for team in result]), 200
+
+@event.listens_for(User, 'after_insert')
+def update_team_after_insert_user(mapper, connection, target):
+    if target.leading_teams:
+        for team_id in target.leading_teams:
+            team = Team.query.get(team_id)
+            if team:
+                team.leaders.append(target)
+        db.session.commit()
+    if target.member_teams:
+        for team_id in target.member_teams:
+            team = Team.query.get(team_id)
+            if team:
+                team.members.append(target)
+        db.session.commit()
+
+@event.listens_for(Team, 'after_insert')
+def update_user_after_insert_team(mapper, connection, target):
+    if target.leaders:
+        for leader_email in target.leaders:
+            # leader = User.query.get(leader_email)
+            leader = db.session.query(User).filter_by(email=leader_email).first()
+            if leader:
+                leader.leading_teams.append(target)
+        db.session.commit()
+    if target.members:
+        for member_email in target.members:
+            # member = User.query.get(member_email)
+            member = db.session.query(User).filter_by(email=member_email).first()
+            if member:
+                member.member_teams.append(target)
+        db.session.commit()
+
+    
+
 
 
 def init_db():
