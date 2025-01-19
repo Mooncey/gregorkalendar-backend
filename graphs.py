@@ -109,6 +109,7 @@ def match_avails_to_slots(avails: List[UserAvail], slots: List[Slot]) -> List[Me
 
                 member_avails_for_user += [MemberSlot(user.email, s.slotId, score)]
         result_member_avail = MemberAvail(user.email, member_avails_for_user, user.max_blocks)
+        print(f"result: {result_member_avail.email} got {result_member_avail.avail_slots}")
         result += [result_member_avail]
     return result
 

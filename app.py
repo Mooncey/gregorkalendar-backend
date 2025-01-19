@@ -499,6 +499,9 @@ def generate_schedule():
 
 @app.route('/api/team/slot', methods=['POST'])
 def add_slot():
+    """
+    Creates a slot for a given team.
+    """
     req = request.json
     team_id = req["teamId"]
     name = req["name"]
@@ -508,7 +511,7 @@ def add_slot():
     current_slots = db.session.query(Team).filter_by(id=team_id).first().slots
     if current_slots:
         last_elt = current_slots[-1]
-        current_slots.append({"name": name, "numMembers": num_members, "startBlock": start_block, "endBlock": end_block, "slotId": last_elt["slotId"] + 1})
+        current_slots += [{"name": name, "numMembers": num_members, "startBlock": start_block, "endBlock": end_block, "slotId": last_elt["slotId"] + 1}]
     else:
         current_slots = [{"name": name, "numMembers": num_members, "startBlock": start_block, "endBlock": end_block, "slotId": 1}]
 
