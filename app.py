@@ -33,9 +33,11 @@ db.init_app(app)
 def hello_world():
     return jsonify({"message": "Hello, World!"})
 
-# Adds a user to the database
 @app.route('/api/users', methods=['POST'])
 def create_user():
+    """
+    Adds a user to the database
+    """
     data = request.json
     leading_teams_input = []
     member_teams_input = []
@@ -48,15 +50,19 @@ def create_user():
     db.session.commit()
     return jsonify(new_user.to_dict()), 201
 
-# Retrieves all users in the database
 @app.route('/api/users', methods=['GET'])
 def get_users():
+    """
+    Retrieves all users in the database
+    """
     result = db.session.query(User).all()
     return jsonify([user.to_dict() for user in result]), 200
 
-# Retrieves all the teams a given user belongs to
-@app.route('/api/users/team', methods=['GET'])
+@app.route('/api/user/teams', methods=['GET'])
 def get_user_teams():
+    """
+    Retrieves all the teams a given user belongs to
+    """
     user_email = request.args.get("userEmail")
     user_teams = []
 
@@ -83,142 +89,143 @@ def get_user_teams():
 
     return jsonify(teams), 200
 
-# Retrieves team information given user email and team id
 @cross_origin()
 @app.route('/api/team', methods=['GET'])
 def get_team():
-    # TODO
-    stub_data = {
-        "teamId": 1,
-        "schedule": {
-            "slotAssignments": [
-                {
-                    "slot": {
-                        "name": "L2D",
-                        "slotId": 4,
-                        "numMembers": 3,
-                        "startBlock": 34,
-                        "endBlock": 40
-                    },
-                    "members": [
-                        {
-                            "name": "Matthew Kang",
-                            "email": "matt0410@student.ubc.ca"
-                        },
-                        {
-                            "name": "William Xiao",
-                            "email": "munce@student.ubc.ca"
-                        }
-                    ]
-                },
-                {
-                    "slot": {
-                        "name": "L2G",
-                        "slotId": 7,
-                        "numMembers": 2,
-                        "startBlock": 20,
-                        "endBlock": 25
-                    },
-                    "members": [
-                        {
-                            "name": "Susan Chung",
-                            "email": "susan328@student.ubc.ca"
-                        },
-                        {
-                            "name": "Kevin Zhou",
-                            "email": "kevz21@student.ubc.ca"
-                        }
-                    ]
-                },
-                {
-                    "slot": {
-                        "name": "L2H",
-                        "slotId": 9,
-                        "numMembers": 3,
-                        "startBlock": 600,
-                        "endBlock": 601
-                    },
-                    "members": [
-                        {
-                            "name": "Matthew Kang",
-                            "email": "matt0410@student.ubc.ca"
-                        }
-                    ]
-                }
-            ]
-        },
-        "availability": {
-            "userEmail": "kevz21@student.ubc.ca",
-            "availableBlocks": [16, 17, 18, 19, 20, 21, 22, 104, 110],
-            "preferNotBlocks": [23, 24, 25, 35, 36, 37, 600]
-        },
-        "slots": {
-            "slots": [
-                {
-                    "name": "L2A",
-                    "slotId": 1,
-                    "numMembers": 2,
-                    "startBlock": 34,
-                    "endBlock": 40
-                },
-            {
-                "name": "L2D",
-                "slotId": 4,
-                "numMembers": 3,
-                "startBlock": 34,
-                "endBlock": 40
-            },
-            {
-                "name": "L2E",
-                "slotId": 6,
-                "numMembers": 3,
-                "startBlock": 18,
-                "endBlock": 24
-            },
-            {
-                "name": "L2G",
-                "slotId": 7,
-                "numMembers": 2,
-                "startBlock": 20,
-                "endBlock": 25
-            },
-            {
-                "name": "L2H",
-                "slotId": 9,
-                "numMembers": 3,
-                "startBlock": 600,
-                "endBlock": 601
-            }
-        ]
-        },
-        "teamInfo": {
-            "name": "My Awesome Team",
-            "leaders": [
-                {
-                    "name": "Gregor Kiczales",
-                    "email": "gregor@cs.ubc.ca"
-                }
-            ],
-            "members": [
-                {
-                    "name": "Susan Chung",
-                    "email": "susan328@student.ubc.ca"
-                },
-                {
-                    "name": "Matthew Kang",
-                    "email": "matt0410@student.ubc.ca"
-                },
-                {
-                    "name": "Kevin Zhou",
-                    "email": "kevz21@student.ubc.ca"
-                },
-                {
-                    "name": "William Xiao",
-                    "email": "munce@student.ubc.ca"
-                }
-            ]
-        }
-    }
+    """
+    Retrieves team information given user email and team id
+    """
+    # stub_data = {
+    #     "teamId": 1,
+    #     "schedule": {
+    #         "slotAssignments": [
+    #             {
+    #                 "slot": {
+    #                     "name": "L2D",
+    #                     "slotId": 4,
+    #                     "numMembers": 3,
+    #                     "startBlock": 34,
+    #                     "endBlock": 40
+    #                 },
+    #                 "members": [
+    #                     {
+    #                         "name": "Matthew Kang",
+    #                         "email": "matt0410@student.ubc.ca"
+    #                     },
+    #                     {
+    #                         "name": "William Xiao",
+    #                         "email": "munce@student.ubc.ca"
+    #                     }
+    #                 ]
+    #             },
+    #             {
+    #                 "slot": {
+    #                     "name": "L2G",
+    #                     "slotId": 7,
+    #                     "numMembers": 2,
+    #                     "startBlock": 20,
+    #                     "endBlock": 25
+    #                 },
+    #                 "members": [
+    #                     {
+    #                         "name": "Susan Chung",
+    #                         "email": "susan328@student.ubc.ca"
+    #                     },
+    #                     {
+    #                         "name": "Kevin Zhou",
+    #                         "email": "kevz21@student.ubc.ca"
+    #                     }
+    #                 ]
+    #             },
+    #             {
+    #                 "slot": {
+    #                     "name": "L2H",
+    #                     "slotId": 9,
+    #                     "numMembers": 3,
+    #                     "startBlock": 600,
+    #                     "endBlock": 601
+    #                 },
+    #                 "members": [
+    #                     {
+    #                         "name": "Matthew Kang",
+    #                         "email": "matt0410@student.ubc.ca"
+    #                     }
+    #                 ]
+    #             }
+    #         ]
+    #     },
+    #     "availability": {
+    #         "userEmail": "kevz21@student.ubc.ca",
+    #         "availableBlocks": [16, 17, 18, 19, 20, 21, 22, 104, 110],
+    #         "preferNotBlocks": [23, 24, 25, 35, 36, 37, 600]
+    #     },
+    #     "slots": {
+    #         "slots": [
+    #             {
+    #                 "name": "L2A",
+    #                 "slotId": 1,
+    #                 "numMembers": 2,
+    #                 "startBlock": 34,
+    #                 "endBlock": 40
+    #             },
+    #         {
+    #             "name": "L2D",
+    #             "slotId": 4,
+    #             "numMembers": 3,
+    #             "startBlock": 34,
+    #             "endBlock": 40
+    #         },
+    #         {
+    #             "name": "L2E",
+    #             "slotId": 6,
+    #             "numMembers": 3,
+    #             "startBlock": 18,
+    #             "endBlock": 24
+    #         },
+    #         {
+    #             "name": "L2G",
+    #             "slotId": 7,
+    #             "numMembers": 2,
+    #             "startBlock": 20,
+    #             "endBlock": 25
+    #         },
+    #         {
+    #             "name": "L2H",
+    #             "slotId": 9,
+    #             "numMembers": 3,
+    #             "startBlock": 600,
+    #             "endBlock": 601
+    #         }
+    #     ]
+    #     },
+    #     "teamInfo": {
+    #         "name": "My Awesome Team",
+    #         "leaders": [
+    #             {
+    #                 "name": "Gregor Kiczales",
+    #                 "email": "gregor@cs.ubc.ca"
+    #             }
+    #         ],
+    #         "members": [
+    #             {
+    #                 "name": "Susan Chung",
+    #                 "email": "susan328@student.ubc.ca"
+    #             },
+    #             {
+    #                 "name": "Matthew Kang",
+    #                 "email": "matt0410@student.ubc.ca"
+    #             },
+    #             {
+    #                 "name": "Kevin Zhou",
+    #                 "email": "kevz21@student.ubc.ca"
+    #             },
+    #             {
+    #                 "name": "William Xiao",
+    #                 "email": "munce@student.ubc.ca"
+    #             }
+    #         ]
+    #     }
+    # }
     req = request.json
     team_id = req['teamId']
     user_email = req['userEmail']
@@ -253,10 +260,11 @@ def get_team():
 
     return jsonify(team_info)
 
-# Creates a new team with a leader given a team name and user email
 @app.route('/api/team', methods=['POST'])
 def create_single_team():
-    # TODO
+    """
+    Creates a new team with a leader given a team name and user email
+    """
     req = request.json
     user_email = req['userEmail']
     team_name = req['teamName']
@@ -270,9 +278,11 @@ def create_single_team():
     db.session.commit()
     return jsonify({"teamId": new_team.id}), 200
 
-# Adds a new leader to an existing team
 @app.route('/api/team/leader', methods=['POST'])
 def add_leader():
+    """
+    Adds a new leader to an existing team
+    """
     error_response = {
         "error": "User with given email is already on the team"
     }
@@ -298,9 +308,11 @@ def add_leader():
     db.session.commit()
     return jsonify({"teamId": team_id}), 200
 
-# Adds a new member to an existing team
 @app.route('/api/team/member', methods=['POST'])
 def add_member():
+    """
+    Adds a new member to an existing team
+    """
     error_response = {
         "error": "User with given email is already on the team"
     }
@@ -329,9 +341,12 @@ def add_member():
     db.session.commit()
     return jsonify({"teamId": team_id}), 200
 
-# Updates availability of a member for a team
+
 @app.route('/api/member/availability', methods=['POST'])
 def update_availability():
+    """ 
+    Updates availability of a member for a team 
+    """
     req = request.json
 
     team_id = req['teamId']
@@ -428,9 +443,11 @@ def update_availability():
 #     return jsonify([team.to_dict() for team in result]), 200
 
 
-# Graph algorithm endpoints
-@app.route('/api/schedule', methods=['GET'])
-def get_schedule():
+@app.route('/api/schedule', methods=['PUT'])
+def generate_schedule():
+    """
+    Creates the schedule for a given team
+    """
     id = request.args.get("id")
     team = db.session.query(Team).filter_by(id=id).first()
 
