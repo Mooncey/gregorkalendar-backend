@@ -3,21 +3,30 @@ import networkx as nx
 import json as json
 
 class UserAvail:
-    def __init__(self, js):
+    def __init__(self, email: str, available_blocks: List[int], prefer_not_blocks: List[int], max_blocks: int):
         self.email = "munce@ubc.ca"
         self.available_blocks = [1, 4, 5]
         self.prefer_not_blocks = [2, 3]
         self.max_blocks = 2
-        self.__dict__ = json.loads(js)
+
+        self.email = email
+        self.available_blocks = available_blocks
+        self.prefer_not_blocks = prefer_not_blocks
+        self.max_blocks = max_blocks
 
 class Slot:
-    def __init__(self, js):
+    def __init__(self, name: str, slotId: int, numMembers: int, startBlock: int, endBlock: int):
         self.name = "L2A"
         self.slotId = 2
         self.numMembers = 3
         self.startBlock = 2
         self.endBlock = 4
-        self.__dict__ = json.loads(js)
+
+        self.name = name
+        self.slotId = slotId
+        self.numMembers = numMembers
+        self.startBlock = startBlock
+        self.endBlock = endBlock
 
 class MemberSlot:
     """
@@ -164,50 +173,50 @@ def mapping_to_results(mapping: dict, members: List[MemberSlot]):
 
 
 
-def main():
-    # TODO delete this function
-    # memberAvails = [
-    #     MemberAvail("Ali", [MemberSlot("Ali", 1, 1), MemberSlot("Ali", 2, 2), MemberSlot("Ali", 3, 3)], 2),
-    #     MemberAvail("Azi", [MemberSlot("Azi", 1, 3), MemberSlot("Azi", 2, 1), MemberSlot("Azi", 3, 1)], 2),
-    #     MemberAvail("Ari", [MemberSlot("Ari", 1, 1), MemberSlot("Ari", 2, 1)], 1)
-    # ]
-    # slots = [
-    #     Slot('{"name": "L1A", "slotId": 1, "numMembers": 2, "startBlock": 1, "endBlock": 3}'),
-    #     Slot('{"name": "L2A", "slotId": 2, "numMembers": 2, "startBlock": 2, "endBlock": 4}'),
-    #     Slot('{"name": "L3A", "slotId": 3, "numMembers": 1, "startBlock": 3, "endBlock": 5}')
-    # ]
-    # graph = generate_graph(memberAvails, slots)
-    # # print(graph)
-    # result = nx.max_flow_min_cost(graph, "source", "sink")
-    # mapping_to_results(result, memberAvails)
-    # useravails = [
-    #     UserAvail('{"email": "munce@ubc.ca", "available_blocks": [1, 4, 5], "prefer_not_blocks": [2, 3], "max_blocks": 2}'),
-    #     UserAvail('{"email": "test@ubc.ca", "available_blocks": [1, 4, 5], "prefer_not_blocks": [], "max_blocks": 1}')
-    # ]
+# def main():
+#     # TODO delete this function
+#     # memberAvails = [
+#     #     MemberAvail("Ali", [MemberSlot("Ali", 1, 1), MemberSlot("Ali", 2, 2), MemberSlot("Ali", 3, 3)], 2),
+#     #     MemberAvail("Azi", [MemberSlot("Azi", 1, 3), MemberSlot("Azi", 2, 1), MemberSlot("Azi", 3, 1)], 2),
+#     #     MemberAvail("Ari", [MemberSlot("Ari", 1, 1), MemberSlot("Ari", 2, 1)], 1)
+#     # ]
+#     # slots = [
+#     #     Slot('{"name": "L1A", "slotId": 1, "numMembers": 2, "startBlock": 1, "endBlock": 3}'),
+#     #     Slot('{"name": "L2A", "slotId": 2, "numMembers": 2, "startBlock": 2, "endBlock": 4}'),
+#     #     Slot('{"name": "L3A", "slotId": 3, "numMembers": 1, "startBlock": 3, "endBlock": 5}')
+#     # ]
+#     # graph = generate_graph(memberAvails, slots)
+#     # # print(graph)
+#     # result = nx.max_flow_min_cost(graph, "source", "sink")
+#     # mapping_to_results(result, memberAvails)
+#     # useravails = [
+#     #     UserAvail('{"email": "munce@ubc.ca", "available_blocks": [1, 4, 5], "prefer_not_blocks": [2, 3], "max_blocks": 2}'),
+#     #     UserAvail('{"email": "test@ubc.ca", "available_blocks": [1, 4, 5], "prefer_not_blocks": [], "max_blocks": 1}')
+#     # ]
 
-    # slots = [
-    #     Slot('{"name": "L2A", "slotId": 2, "numMembers": 3, "startBlock": 2, "endBlock": 4}')
-    # ]
+#     # slots = [
+#     #     Slot('{"name": "L2A", "slotId": 2, "numMembers": 3, "startBlock": 2, "endBlock": 4}')
+#     # ]
 
-    useravails_sample = [
-        UserAvail('{"email": "Ali", "available_blocks": [1, 2, 3, 4, 5], "prefer_not_blocks": [6, 7, 8, 9], "max_blocks": 2}'),
-        UserAvail('{"email": "Azi", "available_blocks": [4, 5, 6, 7, 8, 9], "prefer_not_blocks": [1, 2, 3], "max_blocks": 2}'),
-        UserAvail('{"email": "Ari", "available_blocks": [1, 2, 3, 4, 5, 6], "prefer_not_blocks": [], "max_blocks": 1}'),
-    ]
+#     useravails_sample = [
+#         UserAvail('{"email": "Ali", "available_blocks": [1, 2, 3, 4, 5], "prefer_not_blocks": [6, 7, 8, 9], "max_blocks": 2}'),
+#         UserAvail('{"email": "Azi", "available_blocks": [4, 5, 6, 7, 8, 9], "prefer_not_blocks": [1, 2, 3], "max_blocks": 2}'),
+#         UserAvail('{"email": "Ari", "available_blocks": [1, 2, 3, 4, 5, 6], "prefer_not_blocks": [], "max_blocks": 1}'),
+#     ]
 
-    slots_sample = [
-        Slot('{"name": "L1A", "slotId": 1, "numMembers": 2, "startBlock": 1, "endBlock": 3}'),
-        Slot('{"name": "L2A", "slotId": 2, "numMembers": 2, "startBlock": 4, "endBlock": 6}'),
-        Slot('{"name": "L3A", "slotId": 3, "numMembers": 1, "startBlock": 7, "endBlock": 9}')
-    ]
+#     slots_sample = [
+#         Slot('{"name": "L1A", "slotId": 1, "numMembers": 2, "startBlock": 1, "endBlock": 3}'),
+#         Slot('{"name": "L2A", "slotId": 2, "numMembers": 2, "startBlock": 4, "endBlock": 6}'),
+#         Slot('{"name": "L3A", "slotId": 3, "numMembers": 1, "startBlock": 7, "endBlock": 9}')
+#     ]
 
 
 
-    result = match_avails_to_slots(useravails_sample, slots_sample)
-    [print(f"email is {user.email} available slots are {[f"id = {s.slot_id}; pref = {s.prefer_level}" for s in user.avail_slots]}") for user in result]
-    graph = generate_graph(result, slots_sample)
-    # print(graph)
-    result = nx.max_flow_min_cost(graph, "source", "sink")
-    mapping_to_results(result, useravails_sample)
+#     result = match_avails_to_slots(useravails_sample, slots_sample)
+#     [print(f"email is {user.email} available slots are {[f"id = {s.slot_id}; pref = {s.prefer_level}" for s in user.avail_slots]}") for user in result]
+#     graph = generate_graph(result, slots_sample)
+#     # print(graph)
+#     result = nx.max_flow_min_cost(graph, "source", "sink")
+#     mapping_to_results(result, useravails_sample)
 
-main()
+# main()
