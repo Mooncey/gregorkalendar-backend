@@ -375,7 +375,7 @@ def update_availability():
         table_entry.prefer_not_blocks = prefer_not_blocks
     
     db.session.commit()
-    return 200
+    return req, 200
         
     
 
