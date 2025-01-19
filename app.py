@@ -1,8 +1,10 @@
 from datetime import datetime
 from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS, cross_origin
 
 app = Flask(__name__)
+cors = CORS(app, resources={r"/api/*", {"origins": "http://localhost:5173"}})
 
 @app.route('/api/hello', methods=['GET'])
 def hello_world():
