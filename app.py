@@ -227,7 +227,7 @@ def get_team():
     #     }
     # }
     team_id = request.args.get('teamId')
-    user_email = request.args.get('userEmail')
+    email = request.args.get('userEmail')
 
     team = db.session.query(Team).filter_by(id=team_id).first()
     if not team:
@@ -247,10 +247,10 @@ def get_team():
         team_info["schedule"] = None
 
 
-    if user_email in [member.email for member in team.members]:
-        member_info = db.session.query(MemberTeamInfos).filter_by(team_id=team.id, user_email=user_email).first()
+    if email in [member.email for member in team.members]:
+        member_info = db.session.query(MemberTeamInfos).filter_by(team_id=team.id, user_email=email).first()
         avail_result = {
-            "userEmail": user_email
+            "userEmail": email
         }
         if member_info.available_blocks:
             avail_result["availableBlocks"] = json.loads(member_info.available_blocks)
