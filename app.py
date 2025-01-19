@@ -483,18 +483,18 @@ def generate_schedule():
 
     dejsoned_slots = team.slots
     for slot in dejsoned_slots:
-        slot_obj = Slot(slot.name, slot.slotId, slot.numMembers, slot.startBlock, slot.endBlock)
+        slot_obj = Slot(slot["name"], slot["slotId"], slot["numMembers"], slot["startBlock"], slot["endBlock"])
         slots += [slot_obj]
 
     result = match_avails_to_slots(user_avails, slots)
-    # [print(f"email is {user.email} available slots are {[f"id = {s.slot_id}; pref = {s.prefer_level}" for s in user.avail_slots]}") for user in result]
+    [print(f"email is {user.email} available slots are {[f"id = {s.slot_id}; pref = {s.prefer_level}" for s in user.avail_slots]}") for user in result]
     graph = generate_graph(result, slots)
-    # print(graph)
     result = nx.max_flow_min_cost(graph, "source", "sink")
-    final_schedule = mapping_to_results(result, user_avails)
+    final_schedule = mapping_to_results(result, user_avails, slots)
 
-    team.schedule = final_schedule
-    return jsonify(final_schedule), 200
+    sched = {"teamId": id, "schedule": {"slotAssignments": final_schedule}}
+    team.schedule = sched
+    return jsonify(sched), 200
 
 
 @app.route('/api/team/slot', methods=['POST'])

@@ -157,17 +157,20 @@ def generate_graph(memberAvails: List[MemberAvail], slots: List[Slot]) -> nx.Gra
 def mapping_to_results(mapping: dict, members: List[MemberSlot], slots: List[Slot]):
     final_result = []
     slot_assigns = {}
+    print(mapping)
     for mem in members:
         if mem.email in mapping:
             slot_info = mapping[mem.email]
+            print(f"slot_info is {slot_info} for email {mem.email} ")
             # print(f"For {mem.email} the slot_info is {slot_info}")
             for slot_id in slot_info:
                 if slot_info[slot_id] == 1:
-                    if slot_id in slot_assigns:
+                    if str(slot_id) in slot_assigns:
                         current_data = slot_assigns[slot_id]
                     else:
                         current_data = []
                     name = db.session.query(User).filter_by(email=mem.email).first().name
+                    print(f"name is {name}")
                     slot_assigns[slot_id] = current_data + [{"name": name, "email": mem.email}]
                     # final_result.append({"email": mem.email, "slot_id": slot_id})
                     # print(f"found mapping for email {mem.email} slot_id {slot_id}")
@@ -176,13 +179,14 @@ def mapping_to_results(mapping: dict, members: List[MemberSlot], slots: List[Slo
             #         "email": mem.email,
             #         "slot_id": slot
             #     })
-    # print(final_result)
-    for key, val in slot_assigns:
-        slot = next((x for x in slots if x.slotId == key), None)
-        final_result += [{
-            "slot": slot.__dict__(),
-            "members": val
-        }]
+    print(slot_assigns)
+    for key in slot_assigns:
+        slot = next((x for x in slots if str(x.slotId) == key), None)
+        if slot != None:
+            final_result += [{
+                "slot": slot.__dict__,
+                "members": slot_assigns[key]
+            }]
     return final_result
     # print(mapping)
 
