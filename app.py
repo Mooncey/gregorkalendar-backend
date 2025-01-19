@@ -248,7 +248,7 @@ def get_team():
 
 
     if email in [member.email for member in team.members]:
-        member_info = db.session.query(MemberTeamInfos).filter_by(team_id=team.id, user_email=email).first()
+        member_info = db.session.query(MemberTeamInfos).filter(and_(MemberTeamInfos.team_id==team.id, MemberTeamInfos.user_email==email)).first()
         avail_result = {
             "userEmail": email
         }
