@@ -13,7 +13,7 @@ class Team(db.Model):
     leaders = db.relationship('User', secondary='team_leaders', backref=db.backref('team_leader_relation', lazy='dynamic'))
     members = db.relationship('User', secondary='team_members', backref=db.backref('team_member_relation', lazy='dynamic'))
     schedule = db.Column(db.JSON, nullable=True)
-    slots = db.Column(db.JSON, nullable=False)
+    slots = db.Column(db.JSON, nullable=True)
     
     def to_dict(self):
         result = {

@@ -261,15 +261,11 @@ def get_team():
         else:
             avail_result["preferNotBlocks"] = []
         team_info["availability"] = avail_result
-
-    default_empty_slots = {
-        "slots": []
-    }
     
     if team.slots:
         team_info["slots"] = team.slots
     else:
-        team_info["slots"] = default_empty_slots
+        team_info["slots"] = None
 
 
     return jsonify(team_info)
