@@ -314,7 +314,7 @@ def add_leader():
     team.leaders.append(user)
 
     db.session.commit()
-    return 200
+    return jsonify({"teamId":team_id,"leader":{"name": user.name,"email": user.email}}), 200
 
 @app.route('/api/team/member', methods=['POST'])
 def add_member():
