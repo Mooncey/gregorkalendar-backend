@@ -9,6 +9,11 @@ http://127.0.0.1:5000/api/users
 # Add a new user from here...
 curl -X POST  \
 -H "Content-Type: application/json" \
+-d '{"name": "Gregor Kiczales","email": "gregor@cs.ubc.ca"}' \
+http://127.0.0.1:5000/api/users
+
+curl -X POST  \
+-H "Content-Type: application/json" \
 -d '{"name": "Matthew Kang","email": "matthew@ubc.ca"}' \
 http://127.0.0.1:5000/api/users
 

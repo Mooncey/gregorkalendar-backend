@@ -262,10 +262,14 @@ def get_team():
             avail_result["preferNotBlocks"] = []
         team_info["availability"] = avail_result
 
+    default_empty_slots = {
+        "slots": []
+    }
+    
     if team.slots:
         team_info["slots"] = team.slots
     else:
-        team_info["slots"] = None
+        team_info["slots"] = default_empty_slots
 
 
     return jsonify(team_info)
@@ -487,7 +491,7 @@ def generate_schedule():
         slots += [slot_obj]
 
     result = match_avails_to_slots(user_avails, slots)
-    [print(f"email is {user.email} available slots are {[f"id = {s.slot_id}; pref = {s.prefer_level}" for s in user.avail_slots]}") for user in result]
+    # [print(f"email is {user.email} available slots are {[f"id = {s.slot_id}; pref = {s.prefer_level}" for s in user.avail_slots]}") for user in result]
     graph = generate_graph(result, slots)
     result = nx.max_flow_min_cost(graph, "source", "sink")
     final_schedule = mapping_to_results(result, user_avails, slots)
