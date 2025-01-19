@@ -1,4 +1,5 @@
 from datetime import datetime
+import json
 from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS, cross_origin
@@ -9,7 +10,7 @@ from models.Team import Team
 from models.User import User
 from models.database import db
 from models.TeamUser import team_leaders, team_members
-from graphs import match_avails_to_slots, generate_graph, mapping_to_results
+from graphs import Slot, UserAvail, match_avails_to_slots, generate_graph, mapping_to_results
 import networkx as nx
 
 app = Flask(__name__)
@@ -274,9 +275,13 @@ def get_team():
 @app.route('/api/team', methods=['POST'])
 def create_single_team():
     # TODO
-    user_email = request['userEmail']
-    team_name = request['teamName']
-    leaders_input = [db.session.query(User).filter_by(email=user_email).first()]
+    req = request.json
+    user_email = req['userEmail']
+    team_name = req['teamName']
+    leader = db.session.query(User).filter_by(email=user_email).first()
+    if not leader:
+        return jsonify({"error": "Leader not found"}), 404
+    leaders_input = [leader]
     members_input = []
     new_team = Team(name=team_name, leaders=leaders_input, members=members_input)
     db.session.add(new_team)
@@ -367,20 +372,28 @@ def get_teams():
 def get_schedule():
     id = request.args.get("id")
     team = db.session.query(Team).filter_by(id=id).first()
-    if not team:
-        return jsonify({"error": "Team not found"}), 404
 
-    if not team.schedule:
-        return jsonify({"error": "Schedule doesn't exist yet"}), 400
+    member_infos = [db.session.query(MemberTeamInfos).filter_by(team_id=id, user_email=member.email).first() for member in team.members]
 
     user_avails = []
     slots = []
+    for mem_info in member_infos:
+        avail = UserAvail(mem_info.user_email, json.loads(mem_info.available_blocks), json.loads(mem_info.prefer_not_blocks), mem_info.max_blocks)
+        user_avails += [avail]
+
+    dejsoned_slots = json.loads(team.slots)
+    for slot in dejsoned_slots:
+        slot_obj = Slot(slot.name, slot.slotId, slot.numMembers, slot.startBlock, slot.endBlock)
+        slots += [slot_obj]
+
     result = match_avails_to_slots(user_avails, slots)
     [print(f"email is {user.email} available slots are {[f"id = {s.slot_id}; pref = {s.prefer_level}" for s in user.avail_slots]}") for user in result]
     graph = generate_graph(result, slots)
     # print(graph)
     result = nx.max_flow_min_cost(graph, "source", "sink")
     final_schedule = mapping_to_results(result, user_avails)
+
+    # TODO: transfer schedule
     return jsonify(final_schedule), 200
 
 
@@ -401,20 +414,21 @@ def update_team_after_insert_user(mapper, connection, target):
 
 @event.listens_for(Team, 'after_insert')
 def update_user_after_insert_team(mapper, connection, target):
+    Session = sessionmaker(bind=db.engine)
+    session = Session()
     if target.leaders:
-        for leader_email in target.leaders:
+        for leader in target.leaders:
             # leader = User.query.get(leader_email)
-            leader = db.session.query(User).filter_by(email=leader_email).first()
-            if leader:
-                leader.leading_teams.append(target)
-        db.session.commit()
+            leader_obj = db.session.query(User).filter_by(email=leader.email).first()
+            if leader_obj:
+                leader_obj.leading_teams.append(target)
     if target.members:
-        for member_email in target.members:
+        for member in target.members:
             # member = User.query.get(member_email)
-            member = db.session.query(User).filter_by(email=member_email).first()
-            if member:
-                member.member_teams.append(target)
-        db.session.commit()
+            member_obj = db.session.query(User).filter_by(email=member.email).first()
+            if member_obj:
+                member_obj.member_teams.append(target)
+    session.commit()
 
     
 
