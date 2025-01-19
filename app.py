@@ -298,10 +298,12 @@ def add_leader():
         "error": "User with given email is already on the team"
     }
 
-    team_id = request['teamId']
-    leader_email = request['leader']['email']
+    req = request.json
 
-    user = db.session.query(User).filter_by(id=leader_email).first()
+    team_id = req['teamId']
+    leader_email = req['leader']['email']
+
+    user = db.session.query(User).filter_by(email=leader_email).first()
 
     for t in user.leading_teams:
         if t.id == team_id:
@@ -323,10 +325,12 @@ def add_member():
         "error": "User with given email is already on the team"
     }
 
-    team_id = request['teamId']
-    member_email = request['member']['email']
+    req = request.json
 
-    user = db.session.query(User).filter_by(id=member_email).first()
+    team_id = req['teamId']
+    member_email = req['member']['email']
+
+    user = db.session.query(User).filter_by(email=member_email).first()
 
     for t in user.leading_teams:
         if t.id == team_id:
