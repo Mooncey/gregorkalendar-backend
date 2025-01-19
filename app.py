@@ -498,6 +498,12 @@ def generate_schedule():
     db.session.commit()
     return jsonify(sched), 200
 
+@app.route('/api/user', methods=['GET'])
+def get_user_from_email():
+    email = request.args.get("email")
+    user = db.session.query(User).filter_by(email=email).first()
+    return user.to_dict(), 200
+
 
 @app.route('/api/team/slot', methods=['POST'])
 def add_slot():
