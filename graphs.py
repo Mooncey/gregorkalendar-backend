@@ -41,7 +41,7 @@ class MemberAvail:
 
 
 
-def match_avails_to_slots(avails: List[UserAvail], slots: List[int]) -> List[MemberAvail]:
+def match_avails_to_slots(avails: List[UserAvail], slots: List[Slot]) -> List[MemberAvail]:
     """
     Change a block array to available slots.
 
@@ -79,15 +79,18 @@ def match_avails_to_slots(avails: List[UserAvail], slots: List[int]) -> List[Mem
         }
     ]
     """
-
-    user = avails[0]
-    user_concat_blocks = (user.available_blocks + user.prefer_not_blocks).sort()
-    member_avails_for_user = []
-    for s in slots:
-        arr = blocks_to_array(s.startBlock, s.endBlock)
-        if is_subarray(user.blocks, arr):
-            member_avails_for_user += [MemberSlot(user.email, s.slotId, 1)]
-    return []
+    result = []
+    for user in avails:
+        user_concat_blocks = (user.available_blocks + user.prefer_not_blocks)
+        user_concat_blocks.sort()
+        member_avails_for_user = []
+        for s in slots:
+            arr = blocks_to_array(s.startBlock, s.endBlock)
+            if is_subarray(arr, user_concat_blocks):
+                member_avails_for_user += [MemberSlot(user.email, s.slotId, 1)]
+        result_member_avail = MemberAvail(user.email, member_avails_for_user, user.max_blocks)
+        result += [result_member_avail]
+    return result
 
 def is_subarray(subarray: List[int], array: List[int]) -> bool:
     sub_len = len(subarray)
@@ -153,19 +156,29 @@ def mapping_to_results(mapping: dict, members: List[MemberSlot]):
 
 
 def main():
-    memberAvails = [
-        MemberAvail("Ali", [MemberSlot("Ali", 1, 1), MemberSlot("Ali", 2, 2), MemberSlot("Ali", 3, 3)], 2),
-        MemberAvail("Azi", [MemberSlot("Azi", 1, 3), MemberSlot("Azi", 2, 1), MemberSlot("Azi", 3, 1)], 2),
-        MemberAvail("Ari", [MemberSlot("Ari", 1, 1), MemberSlot("Ari", 2, 1)], 1)
+    # memberAvails = [
+    #     MemberAvail("Ali", [MemberSlot("Ali", 1, 1), MemberSlot("Ali", 2, 2), MemberSlot("Ali", 3, 3)], 2),
+    #     MemberAvail("Azi", [MemberSlot("Azi", 1, 3), MemberSlot("Azi", 2, 1), MemberSlot("Azi", 3, 1)], 2),
+    #     MemberAvail("Ari", [MemberSlot("Ari", 1, 1), MemberSlot("Ari", 2, 1)], 1)
+    # ]
+    # slots = [
+    #     Slot('{"name": "L1A", "slotId": 1, "numMembers": 2, "startBlock": 1, "endBlock": 3}'),
+    #     Slot('{"name": "L2A", "slotId": 2, "numMembers": 2, "startBlock": 2, "endBlock": 4}'),
+    #     Slot('{"name": "L3A", "slotId": 3, "numMembers": 1, "startBlock": 3, "endBlock": 5}')
+    # ]
+    # graph = generate_graph(memberAvails, slots)
+    # # print(graph)
+    # result = nx.max_flow_min_cost(graph, "source", "sink")
+    # mapping_to_results(result, memberAvails)
+    useravails = [
+        UserAvail('{"email": "munce@ubc.ca", "available_blocks": [1, 4, 5], "prefer_not_blocks": [2, 3], "max_blocks": 2}'),
+        UserAvail('{"email": "test@ubc.ca", "available_blocks": [1, 4, 5], "prefer_not_blocks": [], "max_blocks": 1}')
     ]
+
     slots = [
-        Slot('{"name": "L1A", "slotId": 1, "numMembers": 2, "startBlock": 1, "endBlock": 3}'),
-        Slot('{"name": "L2A", "slotId": 2, "numMembers": 2, "startBlock": 2, "endBlock": 4}'),
-        Slot('{"name": "L3A", "slotId": 3, "numMembers": 1, "startBlock": 3, "endBlock": 5}')
+        Slot('{"name": "L2A", "slotId": 2, "numMembers": 3, "startBlock": 2, "endBlock": 4}')
     ]
-    graph = generate_graph(memberAvails, slots)
-    # print(graph)
-    result = nx.max_flow_min_cost(graph, "source", "sink")
-    mapping_to_results(result, memberAvails)
+    result = match_avails_to_slots(useravails, slots)
+    [print(f"email is {user.email} available slots are {[s.slot_id for s in user.avail_slots]}") for user in result]
 
 main()

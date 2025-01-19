@@ -7,4 +7,4 @@ To initialize the database, run `python init_db.py`
 To run the app locally, run `python app.py`
 
 If you add more packages using pip install, update the requirements.txt by
-doing `pip freeze >> requirements.txt`
+doing `pip freeze > requirements.txt`
