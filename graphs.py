@@ -5,7 +5,8 @@ import json as json
 class UserAvail:
     def __init__(self, js):
         self.email = "munce@ubc.ca"
-        self.blocks = [1, 2, 3, 4, 5]
+        self.available_blocks = [1, 4, 5]
+        self.prefer_not_blocks = [2, 3]
         self.max_blocks = 2
         self.__dict__ = json.loads(js)
 
@@ -48,7 +49,8 @@ def match_avails_to_slots(avails: List[UserAvail], slots: List[int]) -> List[Mem
     [
         {
             "email": "munce@ubc.ca",
-            "blocks": [1, 2, 3, 4, 5],
+            "available_blocks": [1, 4, 5],
+            "prefer_not_blocks": [2, 3],
             "max_blocks": 2
         }
     ]
@@ -77,7 +79,22 @@ def match_avails_to_slots(avails: List[UserAvail], slots: List[int]) -> List[Mem
         }
     ]
     """
+
+    user = avails[0]
+    user_concat_blocks = (user.available_blocks + user.prefer_not_blocks).sort()
+    member_avails_for_user = []
+    for s in slots:
+        arr = blocks_to_array(s.startBlock, s.endBlock)
+        if is_subarray(user.blocks, arr):
+            member_avails_for_user += [MemberSlot(user.email, s.slotId, 1)]
     return []
+
+def is_subarray(subarray: List[int], array: List[int]) -> bool:
+    sub_len = len(subarray)
+    for i in range(len(array) - sub_len + 1):
+        if array[i:i + sub_len] == subarray:
+            return True
+    return False
 
 
 def blocks_to_array(start: int, end: int) -> List[int]:
