@@ -354,7 +354,7 @@ def add_member():
     return jsonify({"teamId":team_id,"member":{"name": user.name,"email": user.email}}), 200
 
 
-@app.route('/api/member/availability', methods=['POST'])
+@app.route('/api/team/member/availability', methods=['POST'])
 def update_availability():
     """ 
     Updates availability of a member for a team 
