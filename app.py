@@ -247,10 +247,19 @@ def get_team():
     else:
         team_info["schedule"] = None
 
-    if team.availability:
-        team_info["availability"] = team.availability
-    else:
-        team_info["availability"] = None
+
+    if user_email in [member.email for member in team.members]:
+        member_info = db.session.query(MemberTeamInfos).filter_by(team_id=team.id, user_email=user_email).first()
+        avail_result = {
+            "userEmail": user_email
+        }
+        if member_info.available_blocks:
+            avail_result["availableBlocks"] = json.loads(member_info.available_blocks)
+        else:
+            avail_result["availableBlocks"] = None
+        if member_info.prefer_not_blocks:
+            avail_result["preferNotBlocks"] = json.loads(member_info.prefer_not_blocks)
+        team_info["availability"] = avail_result
 
     if team.slots:
         team_info["slots"] = team.slots
@@ -306,7 +315,7 @@ def add_leader():
     team.leaders.append(user)
 
     db.session.commit()
-    return jsonify({"teamId": team_id}), 200
+    return 200
 
 @app.route('/api/team/member', methods=['POST'])
 def add_member():
@@ -339,7 +348,7 @@ def add_member():
     team.members.append(user)
 
     db.session.commit()
-    return jsonify({"teamId": team_id}), 200
+    return 200
 
 
 @app.route('/api/member/availability', methods=['POST'])
