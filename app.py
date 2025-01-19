@@ -4,7 +4,8 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS, cross_origin
 
 app = Flask(__name__)
-cors = CORS(app, resources={r"/api/*", {"origins": "http://localhost:5173"}})
+app.config['CORS_HEADERS'] = 'Content-Type'
+cors = CORS(app, resources={r"/api/*": {"origins": "http://localhost:5173"}})
 
 @app.route('/api/hello', methods=['GET'])
 def hello_world():
@@ -47,7 +48,7 @@ def get_users():
     result = db.session.query(User).all()
     return jsonify([user.to_dict() for user in result]), 200
 
-
+@cross_origin()
 @app.route('/api/team', methods=['GET'])
 def get_team():
     # TODO
