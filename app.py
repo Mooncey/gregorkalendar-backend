@@ -1,5 +1,6 @@
 from datetime import datetime
 import json
+import os
 from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS, cross_origin
@@ -494,5 +495,7 @@ def init_db():
         print("Database initialized.")
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    init_db()
+    if os.environ.get("IS_PRODUCTION") != 1:
+        app.run(debug=True)
     
