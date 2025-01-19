@@ -350,7 +350,7 @@ def add_member():
     db.session.commit()
     return jsonify({"teamId": team_id}), 200
 
-@app.route('api/member/availability', methods=['POST'])
+@app.route('/api/member/availability', methods=['POST'])
 def update_availability():
     req = request.json
 
