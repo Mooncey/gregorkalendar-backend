@@ -52,7 +52,7 @@ def get_users():
     result = db.session.query(User).all()
     return jsonify([user.to_dict() for user in result]), 200
 
-@app.route('/api/user/team')
+@app.route('/api/users/team', methods=['GET'])
 def get_user_teams():
     # stub_data = {
     #     "teams": [
@@ -74,16 +74,16 @@ def get_user_teams():
     #         }
     #     ]
     # }
-
-    user_email = request['userEmail']
+    req = request.json
+    user_email = req['userEmail']
     user_teams = []
 
-    user = db.session.query(User).filter_by(id=user_email).first()
+    user = db.session.query(User).filter_by(email=user_email).first()
 
     if not user:
         return jsonify({"error": "User not found"}), 404
     
-    for t in user.leader_teams:
+    for t in user.leading_teams:
         user_teams.append({
             "teamName": t.name,
             "teamId": t.id
@@ -99,7 +99,7 @@ def get_user_teams():
         "teams": user_teams
     }
 
-    return jsonify(teams), 2000
+    return jsonify(teams), 200
 
 @cross_origin()
 @app.route('/api/team', methods=['GET'])
@@ -292,6 +292,56 @@ def create_single_team():
     # "teamId": 110
     # })
 
+@app.route('/api/team/leader', methods=['POST'])
+def add_leader():
+    error_response = {
+        "error": "User with given email is already on the team"
+    }
+
+    team_id = request['teamId']
+    leader_email = request['leader']['email']
+
+    user = db.session.query(User).filter_by(id=leader_email).first()
+
+    for t in user.leading_teams:
+        if t.id == team_id:
+            return jsonify(error_response), 400
+        
+    for t in user.member_teams:
+        if t.id == team_id:
+            return jsonify(error_response), 400
+    
+    team = db.session.query(Team).filter_by(id=team_id).first()
+    team.leaders.append(user)
+
+    db.session.commit()
+    return jsonify({"teamId": team_id}), 200
+
+@app.route('/api/team/member', methods=['POST'])
+def add_member():
+    error_response = {
+        "error": "User with given email is already on the team"
+    }
+
+    team_id = request['teamId']
+    member_email = request['member']['email']
+
+    user = db.session.query(User).filter_by(id=member_email).first()
+
+    for t in user.leading_teams:
+        if t.id == team_id:
+            return jsonify(error_response), 400
+        
+    for t in user.member_teams:
+        if t.id == team_id:
+            return jsonify(error_response), 400
+    
+    team = db.session.query(Team).filter_by(id=team_id).first()
+    team.members.append(user)
+
+    db.session.commit()
+    return jsonify({"teamId": team_id}), 200
+
 # TODO: Delete later
 # @app.route('/api/member/team', methods=['GET'])
 # def get_member_teams():
@@ -387,7 +437,7 @@ def get_schedule():
         slots += [slot_obj]
 
     result = match_avails_to_slots(user_avails, slots)
-    [print(f"email is {user.email} available slots are {[f"id = {s.slot_id}; pref = {s.prefer_level}" for s in user.avail_slots]}") for user in result]
+    # [print(f"email is {user.email} available slots are {[f"id = {s.slot_id}; pref = {s.prefer_level}" for s in user.avail_slots]}") for user in result]
     graph = generate_graph(result, slots)
     # print(graph)
     result = nx.max_flow_min_cost(graph, "source", "sink")
