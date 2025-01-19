@@ -255,9 +255,11 @@ def get_team():
         if member_info.available_blocks:
             avail_result["availableBlocks"] = json.loads(member_info.available_blocks)
         else:
-            avail_result["availableBlocks"] = None
+            avail_result["availableBlocks"] = []
         if member_info.prefer_not_blocks:
             avail_result["preferNotBlocks"] = json.loads(member_info.prefer_not_blocks)
+        else:
+            avail_result["preferNotBlocks"] = []
         team_info["availability"] = avail_result
 
     if team.slots:
