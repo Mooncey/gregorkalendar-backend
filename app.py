@@ -28,11 +28,12 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'  # Use SQLite for si
 
 db.init_app(app)
 
-
+# sample
 @app.route('/api/hello', methods=['GET'])
 def hello_world():
     return jsonify({"message": "Hello, World!"})
 
+# Adds a user to the database
 @app.route('/api/users', methods=['POST'])
 def create_user():
     data = request.json
@@ -47,34 +48,15 @@ def create_user():
     db.session.commit()
     return jsonify(new_user.to_dict()), 201
 
-
+# Retrieves all users in the database
 @app.route('/api/users', methods=['GET'])
 def get_users():
     result = db.session.query(User).all()
     return jsonify([user.to_dict() for user in result]), 200
 
+# Retrieves all the teams a given user belongs to
 @app.route('/api/users/team', methods=['GET'])
 def get_user_teams():
-    # stub_data = {
-    #     "teams": [
-    #         {
-    #             "teamName": "My Awesome Team",
-    #             "teamId": 1
-    #         },
-    #         {
-    #             "teamName": "Frontend Team",
-    #             "teamId": 2
-    #         },
-    #         {
-    #             "teamName": "Backend Team",
-    #             "teamId": 3
-    #         },
-    #         {
-    #             "teamName": "CPSC 110 2024W2",
-    #             "teamId": 4
-    #         }
-    #     ]
-    # }
     user_email = request.args.get("userEmail")
     user_teams = []
 
@@ -101,6 +83,7 @@ def get_user_teams():
 
     return jsonify(teams), 200
 
+# Retrieves team information given user email and team id
 @cross_origin()
 @app.route('/api/team', methods=['GET'])
 def get_team():
@@ -246,9 +229,6 @@ def get_team():
 
     team_info = {
         "teamId": team.id,
-        # "teamName": team.name,
-        # "leaders": [leader.to_dict() for leader in team.leaders],
-        # "members": [member.to_dict() for member in team.members],
         "teamInfo": {
             "name": team.name,
             "leaders": [{"name": leader.name, "email": leader.email} for leader in team.leaders],
@@ -273,6 +253,7 @@ def get_team():
 
     return jsonify(team_info)
 
+# Creates a new team with a leader given a team name and user email
 @app.route('/api/team', methods=['POST'])
 def create_single_team():
     # TODO
@@ -289,10 +270,7 @@ def create_single_team():
     db.session.commit()
     return jsonify({"teamId": new_team.id}), 200
 
-    # return jsonify({
-    # "teamId": 110
-    # })
-
+# Adds a new leader to an existing team
 @app.route('/api/team/leader', methods=['POST'])
 def add_leader():
     error_response = {
@@ -320,6 +298,7 @@ def add_leader():
     db.session.commit()
     return jsonify({"teamId": team_id}), 200
 
+# Adds a new member to an existing team
 @app.route('/api/team/member', methods=['POST'])
 def add_member():
     error_response = {
@@ -350,6 +329,7 @@ def add_member():
     db.session.commit()
     return jsonify({"teamId": team_id}), 200
 
+# Updates availability of a member for a team
 @app.route('/api/member/availability', methods=['POST'])
 def update_availability():
     req = request.json
@@ -418,34 +398,34 @@ def update_availability():
 
 #     return jsonify(teams)
 
-@app.route('/api/teams', methods=['POST'])
-def create_team():
-    data = request.json
+# @app.route('/api/teams', methods=['POST'])
+# def create_team():
+#     data = request.json
 
-    user_email = data['userEmail']
-    team_name = data['teamName']
-    leaders_input = [db.session.query(User).filter_by(email=user_email).first()]
-    members_input = []
-    # if 'leaders' in data:
-    #     leader_emails = data['leaders']
-    #     for email in leader_emails:
-    #         print(email)
-    #         leaders_input += [db.session.query(User).filter_by(email=email).first()]
-    # if 'members' in data:
-    #     members_emails = data['members']
-    #     for email in members_emails:
-    #         print(email)
-    #         members_input += [db.session.query(User).filter_by(email=email).first()]
-    new_team = Team(name=team_name, leaders=leaders_input, members=members_input)
-    print(new_team)
-    db.session.add(new_team)
-    db.session.commit()
-    return jsonify({"teamId": new_team.id}), 200
+#     user_email = data['userEmail']
+#     team_name = data['teamName']
+#     leaders_input = [db.session.query(User).filter_by(email=user_email).first()]
+#     members_input = []
+#     # if 'leaders' in data:
+#     #     leader_emails = data['leaders']
+#     #     for email in leader_emails:
+#     #         print(email)
+#     #         leaders_input += [db.session.query(User).filter_by(email=email).first()]
+#     # if 'members' in data:
+#     #     members_emails = data['members']
+#     #     for email in members_emails:
+#     #         print(email)
+#     #         members_input += [db.session.query(User).filter_by(email=email).first()]
+#     new_team = Team(name=team_name, leaders=leaders_input, members=members_input)
+#     print(new_team)
+#     db.session.add(new_team)
+#     db.session.commit()
+#     return jsonify({"teamId": new_team.id}), 200
 
-@app.route('/api/teams', methods=['GET'])
-def get_teams():
-    result = db.session.query(Team).all()
-    return jsonify([team.to_dict() for team in result]), 200
+# @app.route('/api/teams', methods=['GET'])
+# def get_teams():
+#     result = db.session.query(Team).all()
+#     return jsonify([team.to_dict() for team in result]), 200
 
 
 # Graph algorithm endpoints
