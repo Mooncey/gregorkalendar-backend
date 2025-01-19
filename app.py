@@ -494,6 +494,8 @@ def generate_schedule():
 
     sched = {"teamId": id, "schedule": {"slotAssignments": final_schedule}}
     team.schedule = sched
+
+    db.session.commit()
     return jsonify(sched), 200
 
 
