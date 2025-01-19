@@ -46,6 +46,175 @@ def get_users():
     return jsonify([user.to_dict() for user in result]), 200
 
 
+@app.route('/api/team', methods=['GET'])
+def get_team():
+    # TODO
+    stub_data = {
+        "teamId": 1,
+        "schedule": {
+            "slotAssignments": [
+                {
+                    "slot": {
+                        "name": "L2D",
+                        "slotId": 4,
+                        "numMembers": 3,
+                        "startBlock": 34,
+                        "endBlock": 40
+                    },
+                    "members": [
+                        {
+                            "name": "Matthew Kang",
+                            "email": "matt0410@student.ubc.ca"
+                        },
+                        {
+                            "name": "William Xiao",
+                            "email": "munce@student.ubc.ca"
+                        }
+                    ]
+                },
+                {
+                    "slot": {
+                        "name": "L2G",
+                        "slotId": 7,
+                        "numMembers": 2,
+                        "startBlock": 20,
+                        "endBlock": 25
+                    },
+                    "members": [
+                        {
+                            "name": "Susan Chung",
+                            "email": "susan328@student.ubc.ca"
+                        },
+                        {
+                            "name": "Kevin Zhou",
+                            "email": "kevz21@student.ubc.ca"
+                        }
+                    ]
+                },
+                {
+                    "slot": {
+                        "name": "L2H",
+                        "slotId": 9,
+                        "numMembers": 3,
+                        "startBlock": 600,
+                        "endBlock": 601
+                    },
+                    "members": [
+                        {
+                            "name": "Matthew Kang",
+                            "email": "matt0410@student.ubc.ca"
+                        }
+                    ]
+                }
+            ]
+        },
+        "availability": {
+            "userEmail": "kevz21@student.ubc.ca",
+            "availableBlocks": [16, 17, 18, 19, 20, 21, 22, 104, 110],
+            "preferNotBlocks": [23, 24, 25, 35, 36, 37, 600]
+        },
+        "slots": {
+            "slots": [
+                {
+                    "name": "L2A",
+                    "slotId": 1,
+                    "numMembers": 2,
+                    "startBlock": 34,
+                    "endBlock": 40
+                },
+            {
+                "name": "L2D",
+                "slotId": 4,
+                "numMembers": 3,
+                "startBlock": 34,
+                "endBlock": 40
+            },
+            {
+                "name": "L2E",
+                "slotId": 6,
+                "numMembers": 3,
+                "startBlock": 18,
+                "endBlock": 24
+            },
+            {
+                "name": "L2G",
+                "slotId": 7,
+                "numMembers": 2,
+                "startBlock": 20,
+                "endBlock": 25
+            },
+            {
+                "name": "L2H",
+                "slotId": 9,
+                "numMembers": 3,
+                "startBlock": 600,
+                "endBlock": 601
+            }
+        ]
+        },
+        "teamInfo": {
+            "name": "My Awesome Team",
+            "leaders": [
+                {
+                    "name": "Gregor Kiczales",
+                    "email": "gregor@cs.ubc.ca"
+                }
+            ],
+            "members": [
+                {
+                    "name": "Susan Chung",
+                    "email": "susan328@student.ubc.ca"
+                },
+                {
+                    "name": "Matthew Kang",
+                    "email": "matt0410@student.ubc.ca"
+                },
+                {
+                    "name": "Kevin Zhou",
+                    "email": "kevz21@student.ubc.ca"
+                },
+                {
+                    "name": "William Xiao",
+                    "email": "munce@student.ubc.ca"
+                }
+            ]
+        }
+    }
+
+    return jsonify(stub_data)
+
+@app.route('/api/team', methods=['POST'])
+def create_team():
+    # TODO
+    return jsonify({
+    "teamId": 110
+    })
+
+@app.route('/api/member/team', methods=['GET'])
+def get_member_teams():
+    # TODO
+    stub_data = {
+        "teams": [
+            {
+                "teamName": "My Awesome Team",
+                "teamId": 1
+            },
+            {
+                "teamName": "Frontend Team",
+                "teamId": 2
+            },
+            {
+                "teamName": "Backend Team",
+                "teamId": 3
+            },
+            {
+                "teamName": "CPSC 110 2024W2",
+                "teamId": 4
+            }
+        ]
+    }
+    return jsonify(stub_data)
+
 
 def init_db():
     with app.app_context():
