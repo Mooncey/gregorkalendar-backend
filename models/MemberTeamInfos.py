@@ -12,8 +12,16 @@ class MemberTeamInfos(db.Model):
     max_blocks = db.Column(db.Integer, nullable=False)
  
     def to_dict(self):
-        return {
+        result = {
             'team_id': self.team_id,
             'user_email': self.user_email,
             'max_blocks': self.max_blocks
         }
+        
+        if self.available_blocks:
+            result['available_blocks'] = self.available_blocks
+        if self.prefer_not_blocks:
+            result['prefer_not_blocks'] = self.prefer_not_blocks
+
+        return result
+        

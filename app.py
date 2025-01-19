@@ -4,7 +4,7 @@ import os
 from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS, cross_origin
-from sqlalchemy import event
+from sqlalchemy import event, and_
 from sqlalchemy.orm import sessionmaker
 from models.MemberTeamInfos import MemberTeamInfos
 from models.Team import Team
@@ -346,6 +346,29 @@ def add_member():
 
     db.session.commit()
     return jsonify({"teamId": team_id}), 200
+
+@app.route('api/member/availability', methods=['POST'])
+def update_availability():
+    req = request.json
+
+    team_id = req['teamId']
+    user_email = req['userEmail']
+    available_blocks = req['availableBlocks']
+    prefer_not_blocks = req['preferNotBlocks']
+
+    table_entry = db.session.query(MemberTeamInfos).filter(and_(MemberTeamInfos.team_id == team_id, MemberTeamInfos.user_email == user_email)).first()
+
+    if not table_entry:
+        return jsonify({"error": "Please double check the given team id and user email"}), 400
+    else:
+        table_entry.available_blocks = available_blocks
+        table_entry.prefer_not_blocks = prefer_not_blocks
+    
+    db.session.commit()
+    return 200
+        
+    
+
 
 # TODO: Delete later
 # @app.route('/api/member/team', methods=['GET'])
