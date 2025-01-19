@@ -9,6 +9,8 @@ from models.Team import Team
 from models.User import User
 from models.database import db
 from models.TeamUser import team_leaders, team_members
+from graphs import match_avails_to_slots, generate_graph, mapping_to_results
+import networkx as nx
 
 app = Flask(__name__)
 app.config['CORS_HEADERS'] = 'Content-Type'
@@ -51,8 +53,52 @@ def get_users():
 
 @app.route('/api/user/team')
 def get_user_teams():
-    stub_data = {}
-    return jsonify(stub_data), 200
+    # stub_data = {
+    #     "teams": [
+    #         {
+    #             "teamName": "My Awesome Team",
+    #             "teamId": 1
+    #         },
+    #         {
+    #             "teamName": "Frontend Team",
+    #             "teamId": 2
+    #         },
+    #         {
+    #             "teamName": "Backend Team",
+    #             "teamId": 3
+    #         },
+    #         {
+    #             "teamName": "CPSC 110 2024W2",
+    #             "teamId": 4
+    #         }
+    #     ]
+    # }
+
+    user_email = request['userEmail']
+    user_teams = []
+
+    user = db.session.query(User).filter_by(id=user_email).first()
+
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+    
+    for t in user.leader_teams:
+        user_teams.append({
+            "teamName": t.name,
+            "teamId": t.id
+        })
+
+    for t in user.member_teams:
+        user_teams.append({
+            "teamName": t.name,
+            "teamId": t.id
+        })
+    
+    teams = {
+        "teams": user_teams
+    }
+
+    return jsonify(teams), 2000
 
 @cross_origin()
 @app.route('/api/team', methods=['GET'])
@@ -228,8 +274,8 @@ def get_team():
 @app.route('/api/team', methods=['POST'])
 def create_single_team():
     # TODO
-    user_email = data['userEmail']
-    team_name = data['teamName']
+    user_email = request['userEmail']
+    team_name = request['teamName']
     leaders_input = [db.session.query(User).filter_by(email=user_email).first()]
     members_input = []
     new_team = Team(name=team_name, leaders=leaders_input, members=members_input)
@@ -241,49 +287,50 @@ def create_single_team():
     # "teamId": 110
     # })
 
-@app.route('/api/member/team', methods=['GET'])
-def get_member_teams():
-    # TODO
-    stub_data = {
-        "teams": [
-            {
-                "teamName": "My Awesome Team",
-                "teamId": 1
-            },
-            {
-                "teamName": "Frontend Team",
-                "teamId": 2
-            },
-            {
-                "teamName": "Backend Team",
-                "teamId": 3
-            },
-            {
-                "teamName": "CPSC 110 2024W2",
-                "teamId": 4
-            }
-        ]
-    }
+# TODO: Delete later
+# @app.route('/api/member/team', methods=['GET'])
+# def get_member_teams():
+#     # TODO
+#     stub_data = {
+#         "teams": [
+#             {
+#                 "teamName": "My Awesome Team",
+#                 "teamId": 1
+#             },
+#             {
+#                 "teamName": "Frontend Team",
+#                 "teamId": 2
+#             },
+#             {
+#                 "teamName": "Backend Team",
+#                 "teamId": 3
+#             },
+#             {
+#                 "teamName": "CPSC 110 2024W2",
+#                 "teamId": 4
+#             }
+#         ]
+#     }
 
-    user_email = request['userEmail']
-    user_teams = []
+#     user_email = request['userEmail']
+#     user_teams = []
 
-    user = db.session.query(User).filter_by(id=user_email).first()
+#     user = db.session.query(User).filter_by(id=user_email).first()
 
-    if not user:
-        return jsonify({"error": "User not found"}), 404
+#     if not user:
+#         return jsonify({"error": "User not found"}), 404
     
-    for t in user.member_teams:
-        user_teams.append({
-            "teamName": t.name,
-            "teamId": t.id
-        })
+#     for t in user.member_teams:
+#         user_teams.append({
+#             "teamName": t.name,
+#             "teamId": t.id
+#         })
     
-    teams = {
-        "teams": user_teams
-    }
+#     teams = {
+#         "teams": user_teams
+#     }
 
-    return jsonify(teams)
+#     return jsonify(teams)
 
 @app.route('/api/teams', methods=['POST'])
 def create_team():
@@ -313,6 +360,29 @@ def create_team():
 def get_teams():
     result = db.session.query(Team).all()
     return jsonify([team.to_dict() for team in result]), 200
+
+
+# Graph algorithm endpoints
+@app.route('/api/schedule', methods=['GET'])
+def get_schedule():
+    id = request.args.get("id")
+    team = db.session.query(Team).filter_by(id=id).first()
+    if not team:
+        return jsonify({"error": "Team not found"}), 404
+
+    if not team.schedule:
+        return jsonify({"error": "Schedule doesn't exist yet"}), 400
+
+    user_avails = []
+    slots = []
+    result = match_avails_to_slots(user_avails, slots)
+    [print(f"email is {user.email} available slots are {[f"id = {s.slot_id}; pref = {s.prefer_level}" for s in user.avail_slots]}") for user in result]
+    graph = generate_graph(result, slots)
+    # print(graph)
+    result = nx.max_flow_min_cost(graph, "source", "sink")
+    final_schedule = mapping_to_results(result, user_avails)
+    return jsonify(final_schedule), 200
+
 
 @event.listens_for(User, 'after_insert')
 def update_team_after_insert_user(mapper, connection, target):

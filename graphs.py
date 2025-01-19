@@ -158,13 +158,14 @@ def mapping_to_results(mapping: dict, members: List[MemberSlot]):
             #         "email": mem.email,
             #         "slot_id": slot
             #     })
-    print(final_result)
+    # print(final_result)
     return final_result
     # print(mapping)
 
 
 
 def main():
+    # TODO delete this function
     # memberAvails = [
     #     MemberAvail("Ali", [MemberSlot("Ali", 1, 1), MemberSlot("Ali", 2, 2), MemberSlot("Ali", 3, 3)], 2),
     #     MemberAvail("Azi", [MemberSlot("Azi", 1, 3), MemberSlot("Azi", 2, 1), MemberSlot("Azi", 3, 1)], 2),
