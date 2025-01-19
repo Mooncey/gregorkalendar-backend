@@ -333,13 +333,15 @@ def add_member():
 
     user = db.session.query(User).filter_by(email=member_email).first()
 
-    for t in user.leading_teams:
-        if t.id == team_id:
-            return jsonify(error_response), 400
-        
-    for t in user.member_teams:
-        if t.id == team_id:
-            return jsonify(error_response), 400
+    if user.leading_teams:
+        for t in user.leading_teams:
+            if t.id == team_id:
+                return jsonify(error_response), 400
+
+    if user.member_teams:
+        for t in user.member_teams:
+            if t.id == team_id:
+                return jsonify(error_response), 400
         
     db.session.add(MemberTeamInfos(team_id=team_id, user_email=member_email, max_blocks=3))
 
@@ -347,7 +349,7 @@ def add_member():
     team.members.append(user)
 
     db.session.commit()
-    return 200
+    return jsonify({"teamId":team_id,"member":{"name": user.name,"email": user.email}}), 200
 
 
 @app.route('/api/member/availability', methods=['POST'])
