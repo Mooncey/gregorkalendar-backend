@@ -86,8 +86,17 @@ def match_avails_to_slots(avails: List[UserAvail], slots: List[Slot]) -> List[Me
         member_avails_for_user = []
         for s in slots:
             arr = blocks_to_array(s.startBlock, s.endBlock)
+
             if is_subarray(arr, user_concat_blocks):
-                member_avails_for_user += [MemberSlot(user.email, s.slotId, 1)]
+                score = 0
+                # sum of available blocks + prefer not blocks is the "weight"
+                for block in arr:
+                    if block in user.available_blocks:
+                        score += 1
+                    elif block in user.prefer_not_blocks:
+                        score += 2
+
+                member_avails_for_user += [MemberSlot(user.email, s.slotId, score)]
         result_member_avail = MemberAvail(user.email, member_avails_for_user, user.max_blocks)
         result += [result_member_avail]
     return result
@@ -179,6 +188,6 @@ def main():
         Slot('{"name": "L2A", "slotId": 2, "numMembers": 3, "startBlock": 2, "endBlock": 4}')
     ]
     result = match_avails_to_slots(useravails, slots)
-    [print(f"email is {user.email} available slots are {[s.slot_id for s in user.avail_slots]}") for user in result]
+    [print(f"email is {user.email} available slots are {[f"id = {s.slot_id}; pref = {s.prefer_level}" for s in user.avail_slots]}") for user in result]
 
 main()
